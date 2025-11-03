@@ -1,38 +1,122 @@
-body{
-    margin: 0;
-    padding: 0;
+body {
+  margin: 0;
+  padding: 0;
 }
 
-
-#header{
-    background-color: #8b0000;
-    color: white;
+#header {
+  background-color: #8b0000;
+  color: white;
 }
 
-#header h1{
-    margin: 0;
-    padding: 20px;
-    text-align: center;
+#header h1 {
+  margin: 0;
+  padding: 20px;
+  text-align: center;
 }
 
-#products{
-    width: 50%;
-    height: auto;
-
+#products {
+  width: 50%;
+  height: auto;
 }
 
-.container{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    /*margin: 20px;*/
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  /*margin: 20px;*/
 }
 
-.product{
-    flex: 0 0 48%;
-    padding: 20px;
-    border-color: black;
-    border-radius: 10px;
-    border-style: dashed;
-    width: 40%;
+.kasse-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  height: auto;
+}
+
+.produkt-bereich {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.produkte {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 Produkte pro Reihe */
+  gap: 15px;
+  overflow-y: auto;
+}
+
+.product {
+  background: #f0f0f0;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.produkt-info {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+}
+
+.produkt-buttons {
+  gap: 5px;
+  text-align: center;
+}
+
+.bestellung {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.zahlung {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zahlung label {
+  font-weight: bold;
+}
+
+.zahlung input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.btn-bezahlen {
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #4caf50;
+  color: white;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.btn-bezahlen:hover {
+  background: #45a049;
+}
+
+/* Rückgeld ganz unten darstellen */
+.rueckgeld {
+  margin-top: auto; /* schiebt es nach unten */
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
 }

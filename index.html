@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,40 +8,93 @@
 
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header id="header">
         <h1>Christkindl Kassensystem</h1>
     </header>
 
-    <section id="products">
-        <h2>Produkte</h2>
-        <div class="container">
-            <div class="product">Bier</div>
-            <div class="product">Glühwein</div>
-            <div class="product">Wasser</div>
-            <div class="product">Apfelschorle</div>
-            <div class="product">Fischsemmel</div>
-            <div class="product">Pommes</div>
+    <div class="kasse-container">
+        <div class="produkt-bereich">
+            <h2>Produkte</h2>
+            <div class="produkte">
+                <div class="product">
+                    <div class="produkt-info">
+                        <span id="produkt1">Bier</span>
+                    </div>
+                    <div class="produkt-buttons">
+                        <button id="plus1" class="btn-minus">-</button>
+                        <button id="minus1" class="btn-plus">+</button>
+                    </div>
+                </div>
+                <div class="product">
+                    <div class="produkt-info">
+                        <span>Glühwein</span>
+                    </div>
+                    <div class="produkt-buttons">
+                        <button class="btn-minus">-</button>
+                        <button class="btn-plus">+</button>
+                    </div>
+                </div>
+                <div class="product">
+                    <div class="produkt-info">
+                        <span>Pommes</span>
+                    </div>
+                    <div class="produkt-buttons">
+                        <button class="btn-minus">-</button>
+                        <button class="btn-plus">+</button>
+                    </div>
+                </div>
+                <div class="product">
+                    <div class="produkt-info">
+                        <span>Semmel</span>
+                    </div>
+                    <div class="produkt-buttons">
+                        <button class="btn-minus">-</button>
+                        <button class="btn-plus">+</button>
+                    </div>
+                </div>
+                <div class="product">
+                    <div class="produkt-info">
+                        <span>Saft</span>
+                    </div>
+                    <div class="produkt-buttons">
+                        <button class="btn-minus">-</button>
+                        <button class="btn-plus">+</button>
+                    </div>
+                </div>
+                <div class="product">
+                    <div class="produkt-info">
+                        <span>Birne</span>
+                    </div>
+                    <div class="produkt-buttons">
+                        <button class="btn-minus">-</button>
+                        <button class="btn-plus">+</button>
+                    </div>
+                </div>
+            </div>
         </div>
-    </section>
 
-    <section>
-        <h2>Aktuelle Bestellung</h2>
+        <!-- Rechte Seite: Bestellübersicht -->
+        <div class="bestellung">
+            <h2>Aktuelle Bestellung</h2>
 
-        <ul>
-            <li>bier</li>
-            <li>pommes</li>
-        </ul>
+            <div class="order-list">
+                <!-- Dynamisch Inhalte einfügen -->
+            </div>
 
-        <p><strong>Gesamtbetrag: </strong> <span>0,00 €</span></p>
-    </section>
+            <div class="zahlung">
+                <label>Gegebenes Geld:</label>
+                <input type="number" placeholder="z.B. 20.00 €">
 
-    <section>
-        <h2>Gezahlt</h2>
-        <input type="gegebener Betrag">
-        <button>Rückgeld anzeigen</button>
+                <button class="btn-bezahlen">Bezahlen</button>
 
-        <p><strong>Rückgeld: </strong> <span>0,00 €</span></p>
-    </section>
+                <p class="rueckgeld">Rückgeld: <strong>0,00 €</strong></p>
+            </div>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
 </body>
+
 </html>
