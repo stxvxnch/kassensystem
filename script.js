@@ -5,6 +5,7 @@ const products = document.querySelectorAll('.product');
 const orderList = document.querySelector('.order-list');
 const zahlung = document.querySelector('.zahlung')
 
+
 products.forEach(product => {
     const plusBtn = product.querySelector('.btn-plus');
     const productName = product.querySelector('.produkt-name').textContent;
@@ -12,6 +13,7 @@ products.forEach(product => {
     const productPrice = product.querySelector('.produkt-preis').textContent;
     const priceNumber = parseFloat(productPrice.replace('€', '').trim());
     const payButton = zahlung.querySelector('.btn-bezahlen')
+    const reset = document.querySelector(".reset")
 
 
     // Klick auf + Button
@@ -33,6 +35,10 @@ products.forEach(product => {
 
     payButton.addEventListener('click', ()=>{
         showChange();
+    })
+
+    reset.addEventListener('click', ()=>{
+        location.reload();
     })
 });
 
@@ -134,4 +140,3 @@ function showChange(){
 
 
 }
-
