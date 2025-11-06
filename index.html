@@ -1,198 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Christkindl Kassensystem</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <header id="header">
-        <h1>Christkindl Kassensystem</h1>
-    </header>
+<header id="header">
+    <h1>Christkindl Kassensystem</h1>
+</header>
 
-    <div class="kasse-container">
-        <div class="produkt-bereich">
-            <h2>Produkte</h2>
-            <div class="produkte">
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name" id="produkt1">Fischsemmel</span>
-                        <span class="produkt-preis">3.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button id="plus1" class="btn-minus">-</button>
-                        <button id="minus1" class="btn-plus">+</button>
-                    </div>
+<div class="kasse-container">
+    <div class="produkt-bereich">
+        <h2>Produkte</h2>
+        <div class="produkte">
+            <!-- Essen -->
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Fischsemmel</span>
+                    <span class="produkt-preis">3.00 €</span>
                 </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Fish & Chips</span>
-                        <span class="produkt-preis">7.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Glühwein</span>
-                        <span class="produkt-preis">3.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Kinderpunsch</span>
-                        <span class="produkt-preis">2.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Schuss</span>
-                        <span class="produkt-preis">1.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Helles</span>
-                        <span class="produkt-preis">3.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Wasser</span>
-                        <span class="produkt-preis">2.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Cola</span>
-                        <span class="produkt-preis">2.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Cola Light</span>
-                        <span class="produkt-preis">2.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Apfelschorle</span>
-                        <span class="produkt-preis">2.50 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Tassenpfand</span>
-                        <span class="produkt-preis">2.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Tassenpfand Rückgabe</span>
-                        <span class="produkt-preis">-2.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Flaschenpfand</span>
-                        <span class="produkt-preis">1.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
-                </div>
-                <div class="product">
-                    <div class="produkt-info">
-                        <span class="produkt-name">Flaschenpfand Rückgabe</span>
-                        <span class="produkt-preis">-1.00 €</span>
-                    </div>
-                    <div class="produkt-buttons">
-                        <button class="btn-minus">-</button>
-                        <button class="btn-plus">+</button>
-                    </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus">+</button>
                 </div>
             </div>
-        </div>
-
-        <!-- Rechte Seite: Bestellübersicht -->
-        <div class="bestellung">
-            <h2>Aktuelle Bestellung</h2>
-
-            <div class="order-list">
-                <!-- Dynamisch Inhalte einfügen -->
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Fish & Chips</span>
+                    <span class="produkt-preis">7.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus">+</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Schuss</span>
+                    <span class="produkt-preis">1.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus">+</button>
+                </div>
             </div>
 
-            <p></p>
-            <div class="current-price">
-
+            <!-- Getränke mit Pfand -->
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Glühwein</span>
+                    <span class="produkt-preis">3.00 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Kinderpunsch</span>
+                    <span class="produkt-preis">2.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Helles</span>
+                    <span class="produkt-preis">3.00 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Wasser</span>
+                    <span class="produkt-preis">2.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Cola</span>
+                    <span class="produkt-preis">2.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Cola Light</span>
+                    <span class="produkt-preis">2.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
+            </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Apfelschorle</span>
+                    <span class="produkt-preis">2.50 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus-pfand">+ Pfand</button>
+                    <button class="btn-plus-no-pfand">+ ohne Pfand</button>
+                </div>
             </div>
 
-            <div class="zahlung">
-                <p></p>
-                <label>Gegebenes Geld:</label>
-                <input type="number" class="given-money" placeholder="z.B. 20.00 €">
-
-                <button class="btn-bezahlen">Bezahlen</button>
-                <p></p>
-                <p class="rueckgeld">Rückgeld: <strong>0,00 €</strong></p>
+            <!-- Pfandrückgaben -->
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Tassenpfand Rückgabe</span>
+                    <span class="produkt-preis">-2.00 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus">+</button>
+                </div>
             </div>
-        </div>
+            <div class="product">
+                <div class="produkt-info">
+                    <span class="produkt-name">Flaschenpfand Rückgabe</span>
+                    <span class="produkt-preis">-1.00 €</span>
+                </div>
+                <div class="produkt-buttons">
+                    <button class="btn-minus">-</button>
+                    <button class="btn-plus">+</button>
+                </div>
+            </div>
 
-    </div>
-
-    <div>
-        <div class="reset-container">
-            <button class="reset">Reset</button>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <div class="bestellung">
+        <h2>Aktuelle Bestellung</h2>
+        <div class="order-list"></div>
+        <div class="current-price"></div>
+
+        <div class="zahlung">
+            <label>Gegebenes Geld:</label>
+            <input type="number" class="given-money" placeholder="z.B. 20.00 €">
+            <button class="btn-bezahlen">Bezahlen</button>
+            <p class="rueckgeld">Rückgeld: <strong>0,00 €</strong></p>
+        </div>
+    </div>
+</div>
+
+<div class="reset-container">
+    <button class="reset">Reset</button>
+</div>
+
+<script src="script.js"></script>
 </body>
-
 </html>

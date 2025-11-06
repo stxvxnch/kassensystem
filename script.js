@@ -1,142 +1,69 @@
-// script.js
-
-// Alle Produkte holen
 const products = document.querySelectorAll('.product');
 const orderList = document.querySelector('.order-list');
-const zahlung = document.querySelector('.zahlung')
+const reset = document.querySelector('.reset');
 
+let orders = {}; // { "Fischsemmel": {count:2, price:3}, ... }
 
 products.forEach(product => {
-    const plusBtn = product.querySelector('.btn-plus');
-    const productName = product.querySelector('.produkt-name').textContent;
-    const minusBtn = product.querySelector(".btn-minus");
-    const productPrice = product.querySelector('.produkt-preis').textContent;
-    const priceNumber = parseFloat(productPrice.replace('€', '').trim());
-    const payButton = zahlung.querySelector('.btn-bezahlen')
-    const reset = document.querySelector(".reset")
+    const name = product.querySelector('.produkt-name').textContent;
+    const basePrice = parseFloat(product.querySelector('.produkt-preis').textContent.replace('€','').trim());
 
+    const btnMinus = product.querySelector('.btn-minus');
+    const btnPlus = product.querySelector('.btn-plus');
+    const btnPlusPfand = product.querySelector('.btn-plus-pfand');
+    const btnPlusNoPfand = product.querySelector('.btn-plus-no-pfand');
 
-    // Klick auf + Button
-    plusBtn.addEventListener('click', () => {
-        addToOrder(productName, priceNumber);
+    if(btnPlus) btnPlus.addEventListener('click', () => addItem(name, basePrice));
+    if(btnPlusPfand) btnPlusPfand.addEventListener('click', () => {
+        let pfand = (name.includes("Glühwein") || name.includes("Kinderpunsch") || name.includes("Helles") || name.includes("Wasser") || name.includes("Cola") || name.includes("Cola Light") || name.includes("Apfelschorle")) ? (name.includes("Glühwein") ? 2 : 1) : 0;
+        addItem(name + " + Pfand", basePrice + pfand);
     });
+    if(btnPlusNoPfand) btnPlusNoPfand.addEventListener('click', () => addItem(name, basePrice));
 
-    minusBtn.addEventListener("click", () => {
-        deleteFromOrder(productName, priceNumber)
-    })
-
-    plusBtn.addEventListener('click', () => {
-        endingPrice();
-    })
-
-    minusBtn.addEventListener('click', () => {
-        endingPrice();
-    })
-
-    payButton.addEventListener('click', ()=>{
-        showChange();
-    })
-
-    reset.addEventListener('click', ()=>{
-        location.reload();
-    })
+    btnMinus.addEventListener('click', () => removeItem(name));
 });
 
-// Funktion um Produkt in die Bestellung zu bringen
-function addToOrder(name, price) {
-    // Prüfen, ob das Produkt schon in der Bestellung ist
-    let existingItem = Array.from(orderList.children).find(item => item.dataset.name === name);
+document.querySelector('.btn-bezahlen').addEventListener('click', showChange);
+reset.addEventListener('click', () => {
+    orders = {};
+    orderList.innerHTML = '';
+    document.querySelector('.current-price').innerHTML = '';
+    document.querySelector('.given-money').value = '';
+    document.querySelector('.rueckgeld').innerHTML = 'Rückgeld: <strong>0,00 €</strong>';
+});
 
-    if (existingItem) {
-        // Anzahl erhöhen
-        let countElem = existingItem.querySelector('.count');
-        let countPrice = existingItem.querySelector('.item-price');
-
-        let currentCount = parseInt(countElem.textContent) + 1;
-        countElem.textContent = currentCount;
-
-        let totalPrice = currentCount * price;
-        countPrice.textContent = totalPrice.toFixed(2) + ' €'
-        
-    } else {
-        // Neues Produkt erstellen
-        const orderItem = document.createElement('div');
-        orderItem.className = 'order-item';
-        orderItem.dataset.name = name;
-        orderItem.dataset.price = price;
-        orderItem.innerHTML = `
-        <strong>${name}</strong> - Menge: <span class="count">1</span>
-        - Price: <span class="item-price">${price.toFixed(2)} €</span>
-        `;
-
-        orderList.appendChild(orderItem);
-        console.log(price)
-    }
+function addItem(name, price){
+    if(!orders[name]) orders[name] = {count:0, price: price};
+    orders[name].count += 1;
+    renderOrders();
 }
 
-function deleteFromOrder(name, price) {
-    let existingItem = Array.from(orderList.children).find(item => item.dataset.name === name)
-
-    if(existingItem){
-        let countElem = existingItem.querySelector(".count");
-        let countPrice = existingItem.querySelector('.item-price');
-        
-        let currentCount = parseInt(countElem.textContent);
-        if(currentCount > 1){
-            let currentCount = parseInt(countElem.textContent) - 1;
-            countElem.textContent = currentCount;
-
-            let totalPrice = currentCount * price;
-            countPrice.textContent = totalPrice.toFixed(2) + ' €';
-        } else {
-            orderList.removeChild(existingItem)
-        }
-        
-    }
+function removeItem(name){
+    if(!orders[name]) return;
+    orders[name].count -=1;
+    if(orders[name].count <=0) delete orders[name];
+    renderOrders();
 }
 
-function endingPrice() {
-    console.log("funkt")
-    const priceContainer = document.querySelector('.current-price')
-
-    const allPrices = document.querySelectorAll('.item-price');
-    let totalPrice = 0;
-
-    for (let i = 0; i < allPrices.length; i++) {
-        let num = parseFloat(allPrices[i].textContent.replace('€', '').trim());
-        if( !isNaN(num)) totalPrice += num;
+function renderOrders(){
+    orderList.innerHTML = '';
+    let total = 0;
+    for(const key in orders){
+        const item = orders[key];
+        const lineTotal = item.count * item.price;
+        total += lineTotal;
+        const div = document.createElement('div');
+        div.className = 'order-item';
+        div.dataset.name = key;
+        div.innerHTML = `<strong>${key}</strong> - Menge: <span class="count">${item.count}</span> - Price: <span class="item-price">${lineTotal.toFixed(2)} €</span>`;
+        orderList.appendChild(div);
     }
-
-    let existingPrice = document.querySelector(".endPrice");
-    if(existingPrice){
-        existingPrice.innerHTML = `
-    <strong>Endpreis: <span class="final-price">${totalPrice.toFixed(2)} €</span></strong>
-    `
-    } else{
-
-    const acutalPrice = document.createElement('div')
-    acutalPrice.className = "endPrice"
-    acutalPrice.dataset.acutalPrice = totalPrice
-    acutalPrice.innerHTML = `
-    <strong>Endpreis: <span class="final-price">${totalPrice.toFixed(2)} €</span></strong>
-    `
-
-    priceContainer.appendChild(acutalPrice)
-    }
+    document.querySelector('.current-price').innerHTML = `<strong>Endpreis: <span class="final-price">${total.toFixed(2)} €</span></strong>`;
 }
-
 
 function showChange(){
-    const change = document.querySelector('.rueckgeld');
-    const endPrice = document.querySelector('.final-price').textContent;
-    let endPriceNumber = parseFloat(endPrice.replace('€', '').trim());
-
-    const givenMoney = document.querySelector('.given-money').value;
-    let givenMoneyNumber = parseFloat(givenMoney.replace(',', '.').trim());
-
-    let changeNumber = givenMoneyNumber - endPriceNumber;
-
-    change.innerHTML = `Rückgeld: <strong>${changeNumber.toFixed(2)} €</strong>`
-
-
+    const endPrice = parseFloat(document.querySelector('.final-price')?.textContent.replace('€','').trim() || 0);
+    const given = parseFloat(document.querySelector('.given-money').value.replace(',','.') || 0);
+    const change = given - endPrice;
+    document.querySelector('.rueckgeld').innerHTML = `Rückgeld: <strong>${change.toFixed(2)} €</strong>`;
 }
