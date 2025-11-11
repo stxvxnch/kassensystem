@@ -66,4 +66,32 @@ function showChange(){
     const given = parseFloat(document.querySelector('.given-money').value.replace(',','.') || 0);
     const change = given - endPrice;
     document.querySelector('.rueckgeld').innerHTML = `Rückgeld: <strong>${change.toFixed(2)} €</strong>`;
+
+    // 1️⃣ Daten für Backend vorbereiten
+const items = Object.keys(orders).map(name => {
+    return {
+        productName: name,
+        unitPrice: orders[name].price,
+        quantity: orders[name].count,
+        totalPrice: orders[name].price * orders[name].count
+    };
+});
+
+const totalPrice = items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+const orderData = {
+    totalPrice: totalPrice,
+    items: items
+};
+
+// 2️⃣ Bestellung an Backend senden
+fetch("http://localhost:8080/api/orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orderData)
+})
+.then(res => res.json())
+.then(data => console.log("Order gespeichert:", data))
+.catch(err => console.error("Fehler:", err));
+
 }
