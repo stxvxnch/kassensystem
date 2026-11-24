@@ -14,18 +14,20 @@ const DEFAULTS = {
 };
 
 // ---------- Backend (Supabase) ----------
-const SUPABASE_URL = 'https://DEIN-PROJEKT.supabase.co';
-const SUPABASE_KEY = 'DEIN-ANON-KEY';
+const SUPABASE_URL = 'https://yagdhydsvifxxdqhjohp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_G6dZLG6yyIi1sJn0unEYhw_b8LbRBxJ';   // neuer "Publishable key" (sb_publishable_...) oder alter anon key (eyJ...)
 const REMOTE = !SUPABASE_URL.includes('DEIN-');
 async function api(path,opts={}){
-  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json',...(opts.headers||{})}});
+  // Neue sb_-Keys sind keine JWTs und gehören nur in den apikey-Header; der alte anon-Key (JWT) darf zusätzlich als Bearer mit.
+  const auth = SUPABASE_KEY.startsWith('sb_') ? {} : {Authorization:'Bearer '+SUPABASE_KEY};
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:{apikey:SUPABASE_KEY,...auth,'Content-Type':'application/json',...(opts.headers||{})}});
   if(!r.ok) throw new Error(await r.text());
   return r.json().catch(()=>null);
 }
 const UPSERT={Prefer:'resolution=merge-duplicates,return=minimal'};
 let pending = (()=>{try{return JSON.parse(localStorage.getItem('pending'))||[];}catch(e){return [];}})();
 function savePending(){try{localStorage.setItem('pending',JSON.stringify(pending));}catch(e){}}
-let flushing=false;
+let flushing=false, lastErr='';
 async function flush(){
   if(!REMOTE||!pending.length||flushing) return;
   flushing=true;
@@ -33,7 +35,8 @@ async function flush(){
   try{
     await api('sales',{method:'POST',headers:UPSERT,body:JSON.stringify(batch.map(s=>({id:s.id,ts:new Date(s.ts).toISOString(),total:s.total,data:s})))});
     pending=pending.filter(s=>!batch.some(b=>b.id===s.id)); savePending();
-  }catch(e){}
+    lastErr='';
+  }catch(e){ lastErr=String(e.message||e); console.error('Backend-Fehler:',e); }
   flushing=false; updateStatus();
 }
 async function fetchSales(){
@@ -50,7 +53,11 @@ async function fetchSales(){
 function pushConfig(){ return REMOTE ? api('config',{method:'POST',headers:UPSERT,body:JSON.stringify({id:1,data:db})}) : Promise.resolve(); }
 function updateStatus(){
   const e=$('#status'); if(!e) return;
-  e.textContent = !REMOTE ? '⚠ kein Backend' : pending.length ? '⚠ '+pending.length+' nicht gesendet' : '● gespeichert';
+  e.textContent = !REMOTE ? '⚠ kein Backend' : lastErr ? '⚠ Backend-Fehler' : pending.length ? '⚠ '+pending.length+' nicht gesendet' : '● gespeichert';
+  e.title = lastErr;
+  let d=$('#errbox');
+  if(!d){ d=document.createElement('div'); d.id='errbox'; d.style.cssText='background:#fff3cd;color:#664d03;padding:8px 12px;font-size:14px;word-break:break-word'; document.body.insertBefore(d,document.querySelector('main')); }
+  d.hidden=!lastErr; d.textContent=lastErr?'Backend-Fehler: '+lastErr:'';
 }
 async function init(){
   updateStatus(); if(!REMOTE) return;
@@ -58,7 +65,9 @@ async function init(){
     const r=await api('config?id=eq.1&select=data');
     if(r&&r.length){ db=r[0].data; try{localStorage.setItem('kasse',JSON.stringify(db));}catch(e){} renderProducts(); renderCart(); }
     else await pushConfig();
-  }catch(e){}
+    lastErr='';
+  }catch(e){ lastErr=String(e.message||e); console.error('Backend-Fehler:',e); }
+  updateStatus();
   flush();
 }
 setInterval(flush,15000);
