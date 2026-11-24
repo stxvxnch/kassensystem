@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Vereinskasse</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,sans-serif;background:#f2f2f2;color:#222}
+header{background:#b71c1c;color:#fff;display:flex;align-items:center;padding:0 12px;gap:8px}
+header h1{font-size:18px;margin:0 auto 0 0;padding:12px 0}
+header button{background:none;border:0;color:#fff;font-size:16px;padding:14px 12px;opacity:.7;cursor:pointer}
+header button.on{opacity:1;border-bottom:3px solid #fff}
+main{padding:10px;max-width:1200px;margin:auto}
+.kasse{display:grid;grid-template-columns:1fr 360px;gap:10px}
+@media(max-width:800px){.kasse{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.prod{background:#fff;border:0;border-radius:10px;padding:14px 6px;font-size:16px;box-shadow:0 1px 3px #0003;cursor:pointer;min-height:84px}
+.prod:active{background:#ffe0b2}
+.prod b{display:block;margin-bottom:4px}
+.prod small{color:#666}
+.tag{display:inline-block;font-size:11px;background:#eee;border-radius:6px;padding:1px 6px;margin-top:4px}
+.panel{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 3px #0003}
+.row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;gap:6px}
+.row.sep{border-top:1px solid #ddd}
+.qty button{width:38px;height:38px;font-size:20px;border:1px solid #bbb;border-radius:8px;background:#fafafa;cursor:pointer}
+.qty span{display:inline-block;min-width:28px;text-align:center;font-weight:bold}
+.total{font-size:28px;font-weight:bold}
+.neg{color:#2e7d32}
+.btn{border:0;border-radius:8px;padding:12px 14px;font-size:16px;cursor:pointer;background:#e0e0e0}
+.btn.pri{background:#2e7d32;color:#fff;width:100%;font-size:20px;padding:16px;margin-top:8px}
+.btn.pri:disabled{background:#aaa}
+.btn.red{background:#c62828;color:#fff}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+input,select{font-size:16px;padding:8px;border:1px solid #bbb;border-radius:8px;width:100%}
+h3{margin:12px 0 6px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden}
+th,td{padding:8px;text-align:left;border-bottom:1px solid #eee}
+td.r,th.r{text-align:right}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 3px #0003}
+.card small{color:#666;display:block}.card b{font-size:22px}
+.bar{background:#b71c1c;height:16px;border-radius:4px}
+.prow{display:grid;grid-template-columns:1.5fr 90px 130px 60px;gap:6px;margin-bottom:6px;align-items:center}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;font-size:18px}
+.toast.show{opacity:1}
+.hint{color:#666;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎄 Vereinskasse</h1>
+  <button id="t-kasse" class="on" onclick="tab('kasse')">Kasse</button>
+  <button id="t-stats" onclick="tab('stats')">Statistik</button>
+  <button id="t-prod" onclick="tab('prod')">Produkte</button>
+</header>
+<main>
+  <div id="v-kasse" class="kasse">
+    <div><div class="grid" id="products"></div></div>
+    <div class="panel" id="cart"></div>
+  </div>
+  <div id="v-stats" hidden></div>
+  <div id="v-prod" hidden></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Daten (alle Geldbeträge in Cent) ----------
+const PFAND_TYPEN = {tasse:'Tasse', flasche:'Flasche'};
+const DEFAULTS = {
+  products:[
+    {id:'p1',name:'Glühwein',price:400,pfand:'tasse'},
+    {id:'p2',name:'Kinderpunsch',price:300,pfand:'tasse'},
+    {id:'p3',name:'Cola',price:300,pfand:'flasche'},
+    {id:'p4',name:'Fanta',price:300,pfand:'flasche'},
+    {id:'p5',name:'Wasser',price:250,pfand:'flasche'},
+    {id:'p6',name:'Bratwurst',price:350,pfand:'none'},
+    {id:'p7',name:'Pommes',price:300,pfand:'none'},
+  ],
+  deposit:{tasse:200,flasche:100},
+  sales:[]
+};
+let db = load();
+let cart = {};                       // produktId -> Menge
+let returns = {tasse:0, flasche:0};  // zurückgegebene Pfandstücke
+let paid = 0;
+
+function load(){
+  try{const d=JSON.parse(localStorage.getItem('kasse')); if(d&&d.products) return d;}catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function save(){ try{localStorage.setItem('kasse',JSON.stringify(db));}catch(e){} }
+
+// ---------- Helfer ----------
+const $ = s=>document.querySelector(s);
+const eur = c => (c/100).toFixed(2).replace('.',',')+' €';
+const parseEur = s => Math.round(parseFloat(String(s).replace(',','.'))*100)||0;
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800);}
+
+function tab(n){
+  for(const x of ['kasse','stats','prod']){
+    $('#v-'+x).hidden = x!==n;
+    $('#t-'+x).classList.toggle('on',x===n);
+  }
+  $('#v-kasse').style.display = n==='kasse' ? '' : 'none';
+  if(n==='stats') renderStats();
+  if(n==='prod') renderProd();
+}
+
+// ---------- Kasse: Berechnung inkl. Pfand ----------
+function calc(){
+  let sub=0; const bought={tasse:0,flasche:0}, lines=[];
+  for(const p of db.products){
+    const q=cart[p.id]||0; if(!q) continue;
+    sub+=q*p.price; lines.push({p,q});
+    if(p.pfand!=='none') bought[p.pfand]+=q;
+  }
+  // Pfand = (neu gekauft - zurückgegeben) * Pfandwert. Kann negativ werden -> Auszahlung.
+  const pfl={}; let pf=0;
+  for(const t in PFAND_TYPEN){ pfl[t]=(bought[t]-returns[t])*db.deposit[t]; pf+=pfl[t]; }
+  return {sub,bought,lines,pfl,pf,total:sub+pf};
+}
+
+function renderProducts(){
+  $('#products').innerHTML = db.products.map(p=>
+    `<button class="prod" onclick="add('${p.id}')"><b>${esc(p.name)}</b><small>${eur(p.price)}</small>`+
+    (p.pfand!=='none'?`<br><span class="tag">+ Pfand ${eur(db.deposit[p.pfand])}</span>`:'')+`</button>`).join('');
+}
+function add(id){cart[id]=(cart[id]||0)+1;renderCart();}
+function chg(id,d){cart[id]=Math.max(0,(cart[id]||0)+d);renderCart();}
+function ret(t,d){returns[t]=Math.max(0,returns[t]+d);renderCart();}
+function resetCart(){cart={};returns={tasse:0,flasche:0};paid=0;renderCart();}
+function addPaid(c){paid+=c;renderCart();}
+function setPaid(v){paid=parseEur(v);updatePay();}
+
+function renderCart(){
+  const c=calc();
+  let h='';
+  if(!c.lines.length) h+='<div class="hint">Produkt antippen …</div>';
+  for(const l of c.lines){
+    h+=`<div class="row"><div>${esc(l.p.name)}<br><small>${eur(l.p.price)}</small></div>
+    <div class="qty"><button onclick="chg('${l.p.id}',-1)">−</button><span>${l.q}</span><button onclick="chg('${l.p.id}',1)">+</button></div>
+    <div style="min-width:70px;text-align:right">${eur(l.q*l.p.price)}</div></div>`;
+  }
+  h+='<h3>Pfand zurück</h3>';
+  for(const t in PFAND_TYPEN){
+    h+=`<div class="row"><div>${PFAND_TYPEN[t]}n zurück<br><small>${eur(db.deposit[t])} je Stück</small></div>
+    <div class="qty"><button onclick="ret('${t}',-1)">−</button><span>${returns[t]}</span><button onclick="ret('${t}',1)">+</button></div><div style="min-width:70px"></div></div>`;
+  }
+  h+=`<div class="row sep"><span>Zwischensumme</span><span>${eur(c.sub)}</span></div>`;
+  for(const t in PFAND_TYPEN){
+    if(c.pfl[t]!==0) h+=`<div class="row"><span>Pfand ${PFAND_TYPEN[t]} (${c.bought[t]} neu − ${returns[t]} zurück)</span><span class="${c.pfl[t]<0?'neg':''}">${eur(c.pfl[t])}</span></div>`;
+  }
+  if(c.total>=0){
+    h+=`<div class="row sep"><span>Zu zahlen</span><span class="total">${eur(c.total)}</span></div>
+    <div class="quick">${[500,1000,2000,5000].map(x=>`<button class="btn" onclick="addPaid(${x})">+${x/100}€</button>`).join('')}
+    <button class="btn" onclick="paid=${c.total};renderCart()">Passend</button>
+    <button class="btn" onclick="paid=0;renderCart()">0</button></div>
+    <input id="paidIn" inputmode="decimal" placeholder="Gegeben (€)" value="${paid?(paid/100).toFixed(2).replace('.',','):''}" oninput="setPaid(this.value)">
+    <div class="row"><span>Rückgeld</span><span class="total" id="change"></span></div>`;
+  } else {
+    h+=`<div class="row sep"><span>Auszahlen an Kunde</span><span class="total neg">${eur(-c.total)}</span></div>`;
+  }
+  h+=`<button class="btn pri" id="done" onclick="finish()">Verkauf abschließen</button>
+  <button class="btn" style="width:100%;margin-top:6px" onclick="resetCart()">Alles zurücksetzen</button>`;
+  $('#cart').innerHTML=h;
+  updatePay();
+}
+
+function updatePay(){
+  const c=calc(), done=$('#done'); if(!done) return;
+  const empty = !c.lines.length && returns.tasse===0 && returns.flasche===0;
+  if(c.total>=0){
+    const ch=paid-c.total;
+    const el=$('#change'); if(el){ el.textContent = paid>=c.total ? eur(ch) : 'fehlt: '+eur(-ch); el.style.color = paid>=c.total?'#2e7d32':'#c62828'; }
+    done.disabled = empty || paid<c.total;
+  } else done.disabled = false;
+}
+
+function finish(){
+  const c=calc(); if(!c.lines.length && returns.tasse===0 && returns.flasche===0) return;
+  const sale={
+    id:Date.now(), ts:Date.now(),
+    items:c.lines.map(l=>({id:l.p.id,name:l.p.name,price:l.p.price,qty:l.q,pfand:l.p.pfand})),
+    bought:c.bought, returned:{...returns}, deposit:{...db.deposit},
+    sub:c.sub, pf:c.pf, total:c.total,   // total = Netto-Kassenbewegung (negativ = Auszahlung)
+    paid:c.total>=0?paid:0
+  };
+  db.sales.push(sale); save();
+  toast(c.total>=0 ? 'Rückgeld: '+eur(paid-c.total) : 'Auszahlen: '+eur(-c.total));
+  resetCart();
+}
+
+// ---------- Statistik ----------
+function renderStats(){
+  const S=db.sales;
+  const umsatz=S.reduce((a,s)=>a+s.sub,0);
+  const pfSaldo=S.reduce((a,s)=>a+s.pf,0);
+  const kasse=umsatz+pfSaldo;
+  const out={tasse:0,flasche:0}, back={tasse:0,flasche:0};
+  S.forEach(s=>{for(const t in out){out[t]+=s.bought[t];back[t]+=s.returned[t];}});
+  const per={};
+  S.forEach(s=>s.items.forEach(i=>{const k=i.name;per[k]=per[k]||{q:0,u:0};per[k].q+=i.qty;per[k].u+=i.qty*i.price;}));
+  const rows=Object.entries(per).sort((a,b)=>b[1].u-a[1].u);
+  const hours={}; S.forEach(s=>{const d=new Date(s.ts);const k=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+String(d.getHours()).padStart(2,'0')+' Uhr';hours[k]=(hours[k]||0)+s.sub;});
+  const maxH=Math.max(1,...Object.values(hours));
+
+  let h=`<div class="cards">
+   <div class="card"><small>Umsatz (ohne Pfand)</small><b>${eur(umsatz)}</b></div>
+   <div class="card"><small>Pfand-Saldo</small><b>${eur(pfSaldo)}</b></div>
+   <div class="card"><small>Soll-Kassenbestand</small><b>${eur(kasse)}</b></div>
+   <div class="card"><small>Verkäufe</small><b>${S.length}</b></div>
+   <div class="card"><small>Ø pro Verkauf</small><b>${S.length?eur(Math.round(umsatz/S.length)):'–'}</b></div></div>
+   <small class="hint">Soll-Kassenbestand = Einnahmen aus diesen Verkäufen (ohne Wechselgeld-Startbestand).</small>
+   <h3>Pro Produkt</h3><table><tr><th>Produkt</th><th class="r">Stück</th><th class="r">Umsatz</th></tr>
+   ${rows.map(([n,v])=>`<tr><td>${esc(n)}</td><td class="r">${v.q}</td><td class="r">${eur(v.u)}</td></tr>`).join('')||'<tr><td colspan=3>Noch keine Verkäufe</td></tr>'}</table>
+   <h3>Pfand</h3><table><tr><th></th><th class="r">Ausgegeben</th><th class="r">Zurück</th><th class="r">Noch draußen</th></tr>
+   ${Object.keys(PFAND_TYPEN).map(t=>`<tr><td>${PFAND_TYPEN[t]}</td><td class="r">${out[t]}</td><td class="r">${back[t]}</td><td class="r">${out[t]-back[t]}</td></tr>`).join('')}</table>
+   <h3>Umsatz nach Stunde</h3><table>${Object.entries(hours).map(([k,v])=>`<tr><td style="width:110px">${k}</td><td><div class="bar" style="width:${v/maxH*100}%"></div></td><td class="r" style="width:90px">${eur(v)}</td></tr>`).join('')||'<tr><td>–</td></tr>'}</table>
+   <h3>Export</h3><div class="quick"><button class="btn" onclick="exportCSV()">CSV (Excel)</button><button class="btn" onclick="exportJSON()">Backup (JSON)</button></div>
+   <h3>Letzte Verkäufe</h3><table>${S.slice(-15).reverse().map(s=>`<tr><td>${new Date(s.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</td>
+   <td>${s.items.map(i=>i.qty+'× '+esc(i.name)).join(', ')||'–'}${(s.returned.tasse||s.returned.flasche)?` <small>(zurück: ${s.returned.tasse} Tasse, ${s.returned.flasche} Flasche)</small>`:''}</td>
+   <td class="r">${eur(s.total)}</td><td class="r"><button class="btn" onclick="storno(${s.id})">Storno</button></td></tr>`).join('')||'<tr><td>–</td></tr>'}</table>
+   <h3>Gefahrenzone</h3><button class="btn red" onclick="wipe()">Alle Verkäufe löschen</button>`;
+  $('#v-stats').innerHTML=h;
+}
+function storno(id){ if(confirm('Diesen Verkauf stornieren?')){db.sales=db.sales.filter(s=>s.id!==id);save();renderStats();} }
+function wipe(){ if(prompt('Alle Verkäufe löschen? Zur Bestätigung LÖSCHEN eintippen')==='LÖSCHEN'){db.sales=[];save();renderStats();} }
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();}
+function exportJSON(){download('kasse-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(db),'application/json');}
+function exportCSV(){
+  const r=[['Bon','Zeit','Artikel','Menge','Einzelpreis','Summe']];
+  db.sales.forEach(s=>{
+    const z=new Date(s.ts).toLocaleString('de-DE');
+    s.items.forEach(i=>r.push([s.id,z,i.name,i.qty,(i.price/100).toFixed(2),(i.qty*i.price/100).toFixed(2)]));
+    for(const t in PFAND_TYPEN){const n=s.bought[t]-s.returned[t]; if(n) r.push([s.id,z,'Pfand '+PFAND_TYPEN[t],n,(s.deposit[t]/100).toFixed(2),(n*s.deposit[t]/100).toFixed(2)]);}
+  });
+  download('kasse-verkaeufe.csv','\ufeff'+r.map(x=>x.map(v=>String(v).replace('.',',')).join(';')).join('\n'),'text/csv');
+}
+
+// ---------- Produkte verwalten ----------
+function renderProd(){
+  let h='<div class="panel"><h3 style="margin-top:0">Produkte</h3>';
+  db.products.forEach(p=>{
+    h+=`<div class="prow"><input value="${esc(p.name)}" onchange="upd('${p.id}','name',this.value)">
+    <input inputmode="decimal" value="${(p.price/100).toFixed(2).replace('.',',')}" onchange="upd('${p.id}','price',this.value)">
+    <select onchange="upd('${p.id}','pfand',this.value)">
+      <option value="none" ${p.pfand==='none'?'selected':''}>kein Pfand</option>
+      <option value="tasse" ${p.pfand==='tasse'?'selected':''}>Tasse</option>
+      <option value="flasche" ${p.pfand==='flasche'?'selected':''}>Flasche</option></select>
+    <button class="btn red" onclick="delP('${p.id}')">✕</button></div>`;
+  });
+  h+=`<button class="btn" onclick="addP()">+ Produkt hinzufügen</button>
+  <h3>Pfandwerte</h3>
+  ${Object.keys(PFAND_TYPEN).map(t=>`<div class="prow" style="grid-template-columns:1fr 90px"><span>${PFAND_TYPEN[t]}</span><input inputmode="decimal" value="${(db.deposit[t]/100).toFixed(2).replace('.',',')}" onchange="db.deposit['${t}']=parseEur(this.value);save();renderProducts();renderCart()"></div>`).join('')}
+  <p class="hint">Änderungen gelten sofort. Bereits gespeicherte Verkäufe bleiben unverändert.</p></div>`;
+  $('#v-prod').innerHTML=h;
+}
+function upd(id,k,v){const p=db.products.find(x=>x.id===id);p[k]=k==='price'?parseEur(v):v;save();renderProducts();renderCart();}
+function addP(){db.products.push({id:'p'+Date.now(),name:'Neu',price:300,pfand:'none'});save();renderProd();renderProducts();}
+function delP(id){if(confirm('Produkt entfernen?')){db.products=db.products.filter(p=>p.id!==id);delete cart[id];save();renderProd();renderProducts();renderCart();}}
+
+// ---------- Start ----------
+renderProducts(); renderCart(); tab('kasse');
+</script>
+</body>
+</html>
